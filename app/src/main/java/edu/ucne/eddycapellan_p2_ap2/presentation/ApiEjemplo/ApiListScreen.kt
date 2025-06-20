@@ -2,28 +2,16 @@ package edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -36,18 +24,29 @@ import edu.ucne.eddycapellan_p2_ap2.remote.dto.RepositoryDto
 
 @Composable
 fun ApiListScreen(
-    state: ApiUiState,
+    state: RepositoryUiState,
     onCreate: () -> Unit,
-    onItemClick: (RepositoryDto) -> Unit
+    onItemClick: (RepositoryDto) -> Unit,
+    onRefresh: () -> Unit
 ) {
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onCreate,
-                containerColor = Color(0xFF4CAF50),
-                contentColor = Color.White
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Agregar")
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                FloatingActionButton(
+                    onClick = onRefresh,
+                    containerColor = Color(0xFF03DAC5),
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                }
+
+                FloatingActionButton(
+                    onClick = onCreate,
+                    containerColor = Color(0xFF4CAF50),
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Agregar")
+                }
             }
         }
     ) { paddingValues ->
@@ -74,19 +73,11 @@ fun ApiListScreen(
             if (state.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
-            if (state.errorMessage != null) {
+
+            // Mostrar mensajes de error
+            state.errorMessage?.let { message ->
                 Text(
-                    text = state.errorMessage,
-                    color = Color.Red,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
-            if (state.inputError != null) {
-                Text(
-                    text = state.inputError,
+                    text = message,
                     color = Color.Red,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -95,8 +86,22 @@ fun ApiListScreen(
                 )
             }
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                items(state.api) { repo ->
+            state.inputError?.let { error ->
+                Text(
+                    text = error,
+                    color = Color.Red,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                items(state.repositories) { repo ->
                     RepositoryRow(repo = repo, onClick = { onItemClick(repo) })
                 }
             }
@@ -121,7 +126,7 @@ fun RepositoryRow(
                 .fillMaxWidth()
         ) {
             Text(
-                text = repo.name,
+                text = repo.name ?: "Sin nombre",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
@@ -131,7 +136,7 @@ fun RepositoryRow(
                 color = Color.DarkGray
             )
             Text(
-                text = repo.htmlUrl,
+                text = repo.htmlUrl ?: "URL no disponible",
                 fontSize = 14.sp,
                 color = Color.Blue
             )
@@ -149,15 +154,21 @@ fun RepositoryListScreenPreview() {
             RepositoryDto(name = "Repo3", description = null, htmlUrl = "https://github.com/repo3")
         )
     }
-    val state = ApiUiState(
-        api = sampleRepos
+    val state = RepositoryUiState(
+        repositories = sampleRepos, // Corregido de 'repository' a 'repositories'
+        isLoading = false
     )
 
     ApiListScreen(
         state = state,
-        onCreate = { sampleRepos.add(
-            RepositoryDto(name = "NuevoRepo", description = "Descripción nueva", htmlUrl = "https://github.com/nuevo")
-        ) },
-        onItemClick = { /* Acción al hacer click, por ejemplo abrir detalle */ }
+        onCreate = {
+            sampleRepos.add(
+                RepositoryDto(name = "NuevoRepo", description = "Descripción nueva", htmlUrl = "https://github.com/nuevo")
+            )
+        },
+        onItemClick = { /* Acción al hacer click */ },
+        onRefresh = {
+            println("Actualizar presionado") // Simulación de recarga
+        }
     )
 }
