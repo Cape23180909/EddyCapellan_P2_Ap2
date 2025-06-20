@@ -9,14 +9,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,14 +40,20 @@ import androidx.compose.ui.unit.sp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ApiScreen(
-    state: ApiUiState,
+    state: RepositoryUiState,
     onSave: (String, String, String) -> Unit,
     onCancel: () -> Unit
 ) {
-    var name by remember { mutableStateOf(state.name) }
-    var description by remember { mutableStateOf(state.description) }
-    var htmlUrl by remember { mutableStateOf(state.htmlUrl) }
-    var error by remember { mutableStateOf<String?>(state.inputError) }
+    var name by remember { mutableStateOf(state.name ?: "") }
+    var description by remember { mutableStateOf(state.description ?: "") }
+    var htmlUrl by remember { mutableStateOf(state.htmlUrl ?: "") }
+
+    // Actualizar los estados cuando cambie el state
+    LaunchedEffect(state.name, state.description, state.htmlUrl) {
+        name = state.name ?: ""
+        description = state.description ?: ""
+        htmlUrl = state.htmlUrl ?: ""
+    }
 
     Scaffold(
         topBar = {
@@ -57,6 +68,11 @@ fun ApiScreen(
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Cancelar")
+                    }
                 }
             )
         }
@@ -80,7 +96,8 @@ fun ApiScreen(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Nombre del repositorio") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = state.inputError != null
                 )
 
                 OutlinedTextField(
@@ -93,14 +110,24 @@ fun ApiScreen(
                 OutlinedTextField(
                     value = htmlUrl,
                     onValueChange = { htmlUrl = it },
-                    label = { Text("Url del repositorio") },
+                    label = { Text("URL del repositorio") },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                    isError = state.inputError != null
                 )
 
-                error?.let {
+                // Mostrar errores
+                state.inputError?.let { error ->
                     Text(
-                        text = it,
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                state.errorMessage?.let { error ->
+                    Text(
+                        text = error,
                         color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 4.dp)
                     )
@@ -111,7 +138,7 @@ fun ApiScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Button(
-                        onClick = { onCancel() },
+                        onClick = onCancel,
                         modifier = Modifier
                             .weight(1f)
                             .padding(end = 8.dp)
@@ -120,13 +147,10 @@ fun ApiScreen(
                     }
                     Button(
                         onClick = {
-                            when {
-                                name.isBlank() -> error = "El nombre es requerido"
-                                htmlUrl.isBlank() -> error = "La URL es requerida"
-                                else -> {
-                                    error = null
-                                    onSave(name, description, htmlUrl)
-                                }
+                            if (name.isBlank()) {
+                                onSave("", description, htmlUrl) // El error se manejará en el ViewModel
+                            } else {
+                                onSave(name, description, htmlUrl)
                             }
                         },
                         modifier = Modifier
@@ -145,8 +169,15 @@ fun ApiScreen(
 @Composable
 fun ApiScreenPreview() {
     ApiScreen(
-        state = ApiUiState(),
-        onSave = { name, description, htmlUrl -> println("Nuevo repo: $name, $description, $htmlUrl") },
+        state = RepositoryUiState(
+            name = "Mi Repositorio",
+            description = "Descripción de ejemplo",
+            htmlUrl = "https://github.com/example",
+            inputError = null
+        ),
+        onSave = { name, description, htmlUrl ->
+            println("Guardando: $name, $description, $htmlUrl")
+        },
         onCancel = { println("Cancelado") }
     )
 }
