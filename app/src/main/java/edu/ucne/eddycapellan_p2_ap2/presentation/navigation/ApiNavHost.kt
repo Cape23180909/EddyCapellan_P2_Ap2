@@ -10,6 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ApiListScreen
 import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ApiViewModel
 
 @Composable
@@ -24,18 +25,16 @@ fun ApiNavHost(
         composable("ApiList") {
             val uiState by apiViewModel.uiState.collectAsState()
 
-//            ApiListScreen(
-//                ApiUiState = uiState,
-//                onEdit = { repo ->
-//                    navHostController.navigate("Api/${repo.name}")
-//                },
-//                onCreate = {
-//                    navHostController.navigate("Api/null")
-//                },
-//                onDelete = { repo ->
-//                    apiViewModel.deleteApi(repo.name)
-//                }
-//            )
+            ApiListScreen(
+                state = uiState,
+                onCreate = {
+                    navHostController.navigate("ApiEdit/new") // Ruta para crear nuevo
+                },
+                onItemClick = { repo ->
+                    navHostController.navigate("ApiDetail/${repo.name}") // Ruta para detalles
+                },
+                onRefresh = { apiViewModel.fetchRepositories("username") }
+            )
         }
 
 //        composable("Api/{name}") { backStackEntry ->
