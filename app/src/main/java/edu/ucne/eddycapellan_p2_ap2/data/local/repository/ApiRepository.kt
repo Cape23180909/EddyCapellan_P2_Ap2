@@ -1,6 +1,7 @@
 package edu.ucne.eddycapellan_p2_ap2.data.local.repository
 
-import edu.ucne.eddycapellan_p2_ap2.remote.DataSource
+
+import edu.ucne.eddycapellan_p2_ap2.remote.GitHubApi
 import edu.ucne.eddycapellan_p2_ap2.remote.Resource
 import edu.ucne.eddycapellan_p2_ap2.remote.dto.RepositoryDto
 import kotlinx.coroutines.flow.Flow
@@ -8,15 +9,15 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class ApiRepository @Inject constructor(
-    private val dataSource: DataSource
+    private val api: GitHubApi
 ) {
-    fun getApi(username: String): Flow<Resource<List<RepositoryDto>>> = flow {
+    fun listRepos(username: String): Flow<Resource<List<RepositoryDto>>> = flow {
+        emit(Resource.Loading())
         try {
-            emit(Resource.Loading())
-            val Api = dataSource.getApi(username)
-            emit(Resource.Success(Api))
+            val result = api.listRepos(username)
+            emit(Resource.Success(result))
         } catch (e: Exception) {
-            emit(Resource.Error("Error: ${e.message}"))
+            emit(Resource.Error(e.localizedMessage ?: "Error al obtener los repositorios"))
         }
     }
-}
+    }
