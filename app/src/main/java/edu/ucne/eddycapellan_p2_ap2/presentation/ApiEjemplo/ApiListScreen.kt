@@ -9,9 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -29,6 +27,14 @@ fun ApiListScreen(
     onItemClick: (RepositoryDto) -> Unit,
     onRefresh: () -> Unit
 ) {
+    // Estado para la búsqueda
+    var query by remember { mutableStateOf("") }
+
+    // Filtrar repositorios basados en la búsqueda
+    val filteredRepositories = state.repositories.filter { repo ->
+        query.isBlank() || (repo.name?.contains(query, ignoreCase = true) == true)
+    }
+
     Scaffold(
         floatingActionButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -68,7 +74,26 @@ fun ApiListScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.padding(top = 24.dp))
+            Spacer(modifier = Modifier.padding(top = 16.dp))
+
+            // Barra de búsqueda
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text("Buscar repositorios") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    focusedContainerColor = Color.LightGray,
+                    unfocusedContainerColor = Color.LightGray,
+                    focusedBorderColor = Color.Black,
+                    unfocusedBorderColor = Color.DarkGray,
+                    cursorColor = Color.Black
+                )
+            )
 
             if (state.isLoading) {
                 LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -101,7 +126,7 @@ fun ApiListScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                items(state.repositories) { repo ->
+                items(filteredRepositories) { repo ->
                     RepositoryRow(repo = repo, onClick = { onItemClick(repo) })
                 }
             }
@@ -155,7 +180,7 @@ fun RepositoryListScreenPreview() {
         )
     }
     val state = RepositoryUiState(
-        repositories = sampleRepos, // Corregido de 'repository' a 'repositories'
+        repositories = sampleRepos,
         isLoading = false
     )
 
