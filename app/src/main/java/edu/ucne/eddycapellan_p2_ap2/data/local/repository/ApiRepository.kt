@@ -20,4 +20,4 @@ class ApiRepository @Inject constructor(
             emit(Resource.Error(e.localizedMessage ?: "Error al obtener los repositorios"))
         }
     }
-    }
+}
