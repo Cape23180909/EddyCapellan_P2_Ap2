@@ -10,8 +10,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ApiListScreen
+import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ApiScreen
 import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ApiViewModel
+import edu.ucne.eddycapellan_p2_ap2.presentation.ApiEjemplo.ContribuidorScreen
+import edu.ucne.eddycapellan_p2_ap2.remote.dto.RepositoryDto
 
 @Composable
 fun ApiNavHost(
@@ -28,35 +32,52 @@ fun ApiNavHost(
             ApiListScreen(
                 state = uiState,
                 onCreate = {
-                    navHostController.navigate("ApiEdit/new") // Ruta para crear nuevo
+                    navHostController.navigate("ApiEdit/new") // Aquí navega correctamente
                 },
                 onItemClick = { repo ->
-                    navHostController.navigate("ApiDetail/${repo.name}") // Ruta para detalles
+                    navHostController.navigate("ApiEdit/${repo.name}")
                 },
-                onRefresh = { apiViewModel.fetchRepositories("username") }
+                onRefresh = {
+                    apiViewModel.fetchRepositories("username")
+                }
             )
         }
 
-//        composable("Api/{name}") { backStackEntry ->
-//            val repoNameParam = backStackEntry.arguments?.getString("name")
-//            val isEdit = repoNameParam != "null"
-//            val repository = if (isEdit) apiViewModel.getApiByName(repoNameParam) else null
-//
-//            ApiScreen(
-//                repository = repository,
-//                onSave = { name, description, htmlUrl ->
-//                    val newRepo = RepositoryDto(
-//                        name = name,
-//                        description = description,
-//                        htmlUrl = htmlUrl
-//                    )
-//                    apiViewModel.saveApi(newRepo)
-//                    navHostController.popBackStack()
-//                },
-//                onCancel = {
-//                    navHostController.popBackStack()
-//                }
-//            )
-//        }
+        composable(
+            route = "ApiEdit/{name}",
+            arguments = listOf(navArgument("name") { defaultValue = "new" })
+        ) { backStackEntry ->
+            val nameParam = backStackEntry.arguments?.getString("name") ?: "new"
+            val isEdit = nameParam != "new"
+            val repository = if (isEdit) apiViewModel.getApiByName(nameParam) else null
+
+            val uiState = repository?.let { apiViewModel.toUiState(it) }
+                ?: apiViewModel.toUiState(RepositoryDto("", "", ""))
+
+            ApiScreen(
+                state = uiState,
+                onSave = { name, description, htmlUrl ->
+                    val newRepo = RepositoryDto(name, description, htmlUrl)
+                    apiViewModel.saveApi(newRepo)
+                    navHostController.popBackStack()
+                },
+                onCancel = {
+                    navHostController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = "contributors/{jefe}/{repositorio}"
+        ) { backStackEntry ->
+            val owner = backStackEntry.arguments?.getString("jefe") ?: ""
+            val repo = backStackEntry.arguments?.getString("repositorio") ?: ""
+
+            ContribuidorScreen(
+                owner = owner,
+                repo = repo,
+                onBack = { navHostController.popBackStack() }
+            )
+        }
     }
 }
