@@ -9,4 +9,8 @@ class DataSource @Inject constructor(
     suspend fun listRepos(username: String): List<RepositoryDto> {
         return api.listRepos(username)
     }
+
+    suspend fun createRepository(repositoryDto: RepositoryDto): RepositoryDto {
+        return api.createRepository(repositoryDto)
+    }
 }
