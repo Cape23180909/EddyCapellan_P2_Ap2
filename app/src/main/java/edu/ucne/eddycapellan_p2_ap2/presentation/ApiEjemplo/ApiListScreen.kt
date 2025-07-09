@@ -27,20 +27,21 @@ fun ApiListScreen(
     onItemClick: (RepositoryDto) -> Unit,
     onRefresh: () -> Unit
 ) {
-    // Estado para la búsqueda
     var query by remember { mutableStateOf("") }
 
-    // Filtrar repositorios basados en la búsqueda
     val filteredRepositories = state.repositories.filter { repo ->
         query.isBlank() || (repo.name?.contains(query, ignoreCase = true) == true)
     }
+
+    // Estado local para seleccionar un repo
+    var selectedRepo by remember { mutableStateOf<RepositoryDto?>(null) }
 
     Scaffold(
         floatingActionButton = {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 FloatingActionButton(
                     onClick = onRefresh,
-                    containerColor = Color(0xFF03DAC5),
+                    containerColor = Color(0xFF039BE5),
                     contentColor = Color.White
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
@@ -48,7 +49,7 @@ fun ApiListScreen(
 
                 FloatingActionButton(
                     onClick = onCreate,
-                    containerColor = Color(0xFF4CAF50),
+                    containerColor = Color(0xFF43A047),
                     contentColor = Color.White
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = "Agregar")
@@ -59,7 +60,7 @@ fun ApiListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Gray)
+                .background(Color(0xFFEDE7F6))
                 .padding(paddingValues)
                 .padding(horizontal = 18.dp, vertical = 18.dp)
         ) {
@@ -68,7 +69,7 @@ fun ApiListScreen(
                 style = TextStyle(
                     fontSize = 23.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black,
+                    color = Color(0xFF4A148C),
                     textAlign = TextAlign.Center
                 ),
                 modifier = Modifier.fillMaxWidth()
@@ -76,7 +77,6 @@ fun ApiListScreen(
 
             Spacer(modifier = Modifier.padding(top = 16.dp))
 
-            // Barra de búsqueda
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
@@ -85,21 +85,37 @@ fun ApiListScreen(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.LightGray,
-                    unfocusedContainerColor = Color.LightGray,
-                    focusedBorderColor = Color.Black,
-                    unfocusedBorderColor = Color.DarkGray,
-                    cursorColor = Color.Black
+                    focusedTextColor = Color(0xFF4A148C),
+                    unfocusedTextColor = Color(0xFF4A148C),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFF7B1FA2),
+                    unfocusedBorderColor = Color(0xFF7B1FA2),
+                    cursorColor = Color(0xFF4A148C)
                 )
             )
 
-            if (state.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            selectedRepo?.let {
+                Button(
+                    onClick = { onItemClick(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF7B1FA2)
+                    )
+                ) {
+                    Text("Ver contribuyentes de: ${it.name}")
+                }
             }
 
-            // Mostrar mensajes de error
+            if (state.isLoading) {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFF4A148C)
+                )
+            }
+
             state.errorMessage?.let { message ->
                 Text(
                     text = message,
@@ -127,7 +143,12 @@ fun ApiListScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 items(filteredRepositories) { repo ->
-                    RepositoryRow(repo = repo, onClick = { onItemClick(repo) })
+                    RepositoryRow(
+                        repo = repo,
+                        onClick = {
+                            selectedRepo = repo
+                        }
+                    )
                 }
             }
         }
@@ -143,7 +164,10 @@ fun RepositoryRow(
         elevation = CardDefaults.cardElevation(14.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
         Column(
             modifier = Modifier
@@ -153,17 +177,18 @@ fun RepositoryRow(
             Text(
                 text = repo.name ?: "Sin nombre",
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 18.sp,
+                color = Color(0xFF4A148C)
             )
             Text(
                 text = repo.description ?: "Sin descripción",
                 fontSize = 16.sp,
-                color = Color.DarkGray
+                color = Color(0xFF7B1FA2)
             )
             Text(
                 text = repo.htmlUrl ?: "URL no disponible",
                 fontSize = 14.sp,
-                color = Color.Blue
+                color = Color(0xFF039BE5)
             )
         }
     }
