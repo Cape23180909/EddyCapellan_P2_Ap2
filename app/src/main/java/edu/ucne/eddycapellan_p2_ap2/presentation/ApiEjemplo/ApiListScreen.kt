@@ -102,7 +102,7 @@ fun ApiListScreen(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF7B1FA2)
+                        containerColor = Color(0xFFE2DFE5)
                     )
                 ) {
                     Text("Ver contribuyentes de: ${it.name}")
