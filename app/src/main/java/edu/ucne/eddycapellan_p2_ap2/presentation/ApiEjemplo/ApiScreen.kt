@@ -12,11 +12,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -64,6 +66,7 @@ fun ApiScreen(
                         style = TextStyle(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4A148C),
                             textAlign = TextAlign.Center
                         ),
                         modifier = Modifier.fillMaxWidth()
@@ -71,16 +74,24 @@ fun ApiScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Cancelar")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Cancelar",
+                            tint = Color(0xFF4A148C)
+                        )
                     }
-                }
+                },
+                colors = androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFEDE7F6),
+                    titleContentColor = Color(0xFF4A148C)
+                )
             )
         }
     ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Gray)
+                .background(Color(0xFFEDE7F6))
                 .padding(padding)
                 .padding(20.dp),
             contentAlignment = Alignment.TopCenter
@@ -88,39 +99,66 @@ fun ApiScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black.copy(alpha = 0.95f), shape = MaterialTheme.shapes.medium)
+                    .background(Color.White, shape = MaterialTheme.shapes.medium)
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nombre del repositorio") },
+                    label = { Text("Nombre del repositorio", color = Color(0xFF4A148C)) },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = state.inputError != null
+                    isError = state.inputError != null,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFF4A148C),
+                        unfocusedTextColor = Color(0xFF4A148C),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF7B1FA2),
+                        unfocusedBorderColor = Color(0xFF7B1FA2),
+                        cursorColor = Color(0xFF4A148C)
+                    )
                 )
 
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth()
+                    label = { Text("Descripción", color = Color(0xFF4A148C)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFF4A148C),
+                        unfocusedTextColor = Color(0xFF4A148C),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF7B1FA2),
+                        unfocusedBorderColor = Color(0xFF7B1FA2),
+                        cursorColor = Color(0xFF4A148C)
+                    )
                 )
 
                 OutlinedTextField(
                     value = htmlUrl,
                     onValueChange = { htmlUrl = it },
-                    label = { Text("URL del repositorio") },
+                    label = { Text("URL del repositorio", color = Color(0xFF4A148C)) },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-                    isError = state.inputError != null
+                    isError = state.inputError != null,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color(0xFF4A148C),
+                        unfocusedTextColor = Color(0xFF4A148C),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF7B1FA2),
+                        unfocusedBorderColor = Color(0xFF7B1FA2),
+                        cursorColor = Color(0xFF4A148C)
+                    )
                 )
 
-                // Mostrar errores
+                // Mostrar error
                 state.inputError?.let { error ->
                     Text(
                         text = error,
-                        color = MaterialTheme.colorScheme.error,
+                        color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -128,7 +166,7 @@ fun ApiScreen(
                 state.errorMessage?.let { error ->
                     Text(
                         text = error,
-                        color = MaterialTheme.colorScheme.error,
+                        color = Color.Red,
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
@@ -141,23 +179,35 @@ fun ApiScreen(
                         onClick = onCancel,
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 8.dp)
+                            .padding(end = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFB39DDB)
+                        )
                     ) {
-                        Text("Cancelar")
+                        Text(
+                            text = "Cancelar",
+                            color = Color(0xFF4A148C)
+                        )
                     }
                     Button(
                         onClick = {
                             if (name.isBlank()) {
-                                onSave("", description, htmlUrl) // El error se manejará en el ViewModel
+                                onSave("", description, htmlUrl)
                             } else {
                                 onSave(name, description, htmlUrl)
                             }
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .padding(start = 8.dp)
+                            .padding(start = 8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF7B1FA2)
+                        )
                     ) {
-                        Text("Guardar")
+                        Text(
+                            text = "Guardar",
+                            color = Color.White
+                        )
                     }
                 }
             }
