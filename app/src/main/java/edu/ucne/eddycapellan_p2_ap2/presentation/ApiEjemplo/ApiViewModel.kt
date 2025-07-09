@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.eddycapellan_p2_ap2.data.local.repository.ApiRepository
 import edu.ucne.eddycapellan_p2_ap2.remote.Resource
+import edu.ucne.eddycapellan_p2_ap2.remote.dto.ContribuidoreDto
 import edu.ucne.eddycapellan_p2_ap2.remote.dto.RepositoryDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,11 +20,30 @@ class ApiViewModel @Inject constructor(
     private val repository: ApiRepository
 ) : ViewModel() {
 
+    private val _contributors = MutableStateFlow<List<ContribuidoreDto>>(emptyList())
+    val contributors: StateFlow<List<ContribuidoreDto>> = _contributors
+
     private val _uiState = MutableStateFlow(RepositoryUiState())
     val uiState: StateFlow<RepositoryUiState> = _uiState.asStateFlow()
 
     init {
-        fetchRepositories("enelramon") // Puedes cambiar por un usuario por defecto
+        fetchRepositories("enelramon") // Puedo cambiar por un usuario por defecto
+    }
+
+    fun fetchContributors(owner: String, repo: String) {
+        viewModelScope.launch {
+            repository.getContributors(owner, repo).collectLatest { result ->
+                when (result) {
+                    is Resource.Loading -> {
+                    }
+                    is Resource.Success -> {
+                        _contributors.value = result.data ?: emptyList()
+                    }
+                    is Resource.Error -> {
+                    }
+                }
+            }
+        }
     }
 
     fun fetchRepositories(username: String) {
@@ -149,4 +169,46 @@ class ApiViewModel @Inject constructor(
             )
         }
     }
+
+    // Buscar repositorio por nombre
+    fun getApiByName(name: String): RepositoryDto? {
+        return _uiState.value.repositories.find { it.name == name }
+    }
+
+    // Convertir RepositoryDto a RepositoryUiState
+    fun toUiState(repo: RepositoryDto): RepositoryUiState {
+        return RepositoryUiState(
+            name = repo.name,
+            description = repo.description,
+            htmlUrl = repo.htmlUrl,
+            inputError = null
+        )
+    }
+
+    // Guardar un repositorio directamente
+    fun saveApi(repo: RepositoryDto) {
+        viewModelScope.launch {
+            // Aquí puedes usar el repositorio para hacer POST o PUT según tu lógica
+            // repository.saveRepository(repo) // <--- implementa en ApiRepository si aplica
+
+            // Simulamos como si se hubiera guardado correctamente
+            val currentList = _uiState.value.repositories.toMutableList()
+            val existingIndex = currentList.indexOfFirst { it.name == repo.name }
+
+            if (existingIndex != -1) {
+                currentList[existingIndex] = repo
+            } else {
+                currentList.add(repo)
+            }
+
+            _uiState.update {
+                it.copy(
+                    repositories = currentList,
+                    inputError = null,
+                    errorMessage = null
+                )
+            }
+        }
+    }
+
 }
