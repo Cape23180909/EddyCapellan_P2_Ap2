@@ -18,14 +18,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import edu.ucne.eddycapellan_p2_ap2.remote.dto.PropietarioDto
 import edu.ucne.eddycapellan_p2_ap2.remote.dto.RepositoryDto
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun ApiListScreen(
     state: RepositoryUiState,
     onCreate: () -> Unit,
     onItemClick: (RepositoryDto) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    navController: NavController
 ) {
     var query by remember { mutableStateOf("") }
 
@@ -95,9 +101,17 @@ fun ApiListScreen(
                 )
             )
 
-            selectedRepo?.let {
+            selectedRepo?.let { repo ->
                 Button(
-                    onClick = { onItemClick(it) },
+                    onClick = {
+                        val owner = repo.propietario?.login ?: return@Button
+                        val name = repo.name ?: return@Button
+
+                        val encodedOwner = URLEncoder.encode(owner, StandardCharsets.UTF_8.toString())
+                        val encodedName = URLEncoder.encode(name, StandardCharsets.UTF_8.toString())
+
+                        navController.navigate("contributors/$encodedOwner/$encodedName")
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
@@ -105,9 +119,10 @@ fun ApiListScreen(
                         containerColor = Color(0xFFE2DFE5)
                     )
                 ) {
-                    Text("Ver contribuyentes de: ${it.name}")
+                    Text("Ver contribuyentes de: ${repo.name}")
                 }
             }
+
 
             if (state.isLoading) {
                 LinearProgressIndicator(
@@ -197,13 +212,31 @@ fun RepositoryRow(
 @Preview(showBackground = true)
 @Composable
 fun RepositoryListScreenPreview() {
+    val navController = rememberNavController()
+
     val sampleRepos = remember {
         mutableStateListOf(
-            RepositoryDto(name = "Repo1", description = "Primer repo", htmlUrl = "https://github.com/repo1"),
-            RepositoryDto(name = "Repo2", description = "Segundo repo", htmlUrl = "https://github.com/repo2"),
-            RepositoryDto(name = "Repo3", description = null, htmlUrl = "https://github.com/repo3")
+            RepositoryDto(
+                name = "Repo1",
+                description = "Primer repo",
+                htmlUrl = "https://github.com/repo1",
+                propietario = PropietarioDto(login = "usuario1")
+            ),
+            RepositoryDto(
+                name = "Repo2",
+                description = "Segundo repo",
+                htmlUrl = "https://github.com/repo2",
+                propietario = PropietarioDto(login = "usuario2")
+            ),
+            RepositoryDto(
+                name = "Repo3",
+                description = null,
+                htmlUrl = "https://github.com/repo3",
+                propietario = PropietarioDto(login = "usuario3")
+            )
         )
     }
+
     val state = RepositoryUiState(
         repositories = sampleRepos,
         isLoading = false
@@ -213,12 +246,18 @@ fun RepositoryListScreenPreview() {
         state = state,
         onCreate = {
             sampleRepos.add(
-                RepositoryDto(name = "NuevoRepo", description = "Descripción nueva", htmlUrl = "https://github.com/nuevo")
+                RepositoryDto(
+                    name = "NuevoRepo",
+                    description = "Descripción nueva",
+                    htmlUrl = "https://github.com/nuevo",
+                    propietario = PropietarioDto(login = "nuevoUsuario")
+                )
             )
         },
         onItemClick = { /* Acción al hacer click */ },
         onRefresh = {
-            println("Actualizar presionado") // Simulación de recarga
-        }
+            println("Actualizar presionado")
+        },
+        navController = navController
     )
 }
