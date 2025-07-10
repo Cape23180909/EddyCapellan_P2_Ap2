@@ -74,7 +74,6 @@ fun ApiNavHost(
         ) { backStackEntry ->
             val owner = backStackEntry.arguments?.getString("jefe") ?: ""
             val repo = backStackEntry.arguments?.getString("repositorio") ?: ""
-
             ContribuidorScreen(
                 jefe = owner,
                 repositorio = repo,
