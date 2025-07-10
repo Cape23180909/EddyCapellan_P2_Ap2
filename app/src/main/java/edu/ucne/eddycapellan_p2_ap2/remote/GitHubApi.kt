@@ -6,17 +6,16 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.Response
+
 
 interface GitHubApi {
-    @GET("users/{username}/repos")
-    suspend fun listRepos(@Path("username") username: String): List<RepositoryDto>
+    @GET("users/enelramon/repos")
+    suspend fun listRepos(): Response<List<RepositoryDto>>
 
     @GET("repos/{owner}/{repo}/contributors")
     suspend fun getContributors(
         @Path("owner") owner: String,
         @Path("repo") repo: String
-    ): List<ContribuidoreDto>
-
-    @POST("user/repos")
-    suspend fun createRepository(@Body repo: RepositoryDto): RepositoryDto
+    ): Response<List<ContribuidoreDto>>
 }
