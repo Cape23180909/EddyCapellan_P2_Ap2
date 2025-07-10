@@ -106,10 +106,8 @@ fun ApiListScreen(
                     onClick = {
                         val owner = repo.propietario?.login ?: return@Button
                         val name = repo.name ?: return@Button
-
                         val encodedOwner = URLEncoder.encode(owner, StandardCharsets.UTF_8.toString())
                         val encodedName = URLEncoder.encode(name, StandardCharsets.UTF_8.toString())
-
                         navController.navigate("contributors/$encodedOwner/$encodedName")
                     },
                     modifier = Modifier
@@ -122,7 +120,6 @@ fun ApiListScreen(
                     Text("Ver contribuyentes de: ${repo.name}")
                 }
             }
-
 
             if (state.isLoading) {
                 LinearProgressIndicator(
