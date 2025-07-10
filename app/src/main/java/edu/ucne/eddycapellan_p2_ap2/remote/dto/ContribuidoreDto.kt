@@ -1,8 +1,9 @@
 package edu.ucne.eddycapellan_p2_ap2.remote.dto
 
+import com.squareup.moshi.Json
+
 data class ContribuidoreDto (
-    val login: String,
-    val avatar_url: String,
-    val html_url: String,
-    val contributions: Int
+    @Json(name = "login") val login: String,
+    @Json(name = "avatar_url") val avatarUrl: String?,
+    @Json(name = "contributions") val contributions: Int
 )
