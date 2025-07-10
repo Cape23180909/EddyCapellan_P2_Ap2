@@ -188,10 +188,6 @@ class ApiViewModel @Inject constructor(
     // Guardar un repositorio directamente
     fun saveApi(repo: RepositoryDto) {
         viewModelScope.launch {
-            // Aquí puedes usar el repositorio para hacer POST o PUT según tu lógica
-            // repository.saveRepository(repo) // <--- implementa en ApiRepository si aplica
-
-            // Simulamos como si se hubiera guardado correctamente
             val currentList = _uiState.value.repositories.toMutableList()
             val existingIndex = currentList.indexOfFirst { it.name == repo.name }
 
@@ -210,5 +206,4 @@ class ApiViewModel @Inject constructor(
             }
         }
     }
-
 }

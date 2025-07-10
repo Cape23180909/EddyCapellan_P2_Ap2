@@ -7,6 +7,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -39,7 +40,8 @@ fun ApiNavHost(
                 },
                 onRefresh = {
                     apiViewModel.fetchRepositories("username")
-                }
+                },
+                navController = navHostController
             )
         }
 
@@ -52,12 +54,12 @@ fun ApiNavHost(
             val repository = if (isEdit) apiViewModel.getApiByName(nameParam) else null
 
             val uiState = repository?.let { apiViewModel.toUiState(it) }
-                ?: apiViewModel.toUiState(RepositoryDto("", "", ""))
+                ?: apiViewModel.toUiState(RepositoryDto("", "", "", null))
 
             ApiScreen(
                 state = uiState,
                 onSave = { name, description, htmlUrl ->
-                    val newRepo = RepositoryDto(name, description, htmlUrl)
+                    val newRepo = RepositoryDto(name, description, htmlUrl, null)
                     apiViewModel.saveApi(newRepo)
                     navHostController.popBackStack()
                 },
@@ -74,8 +76,8 @@ fun ApiNavHost(
             val repo = backStackEntry.arguments?.getString("repositorio") ?: ""
 
             ContribuidorScreen(
-                owner = owner,
-                repo = repo,
+                jefe = owner,
+                repositorio = repo,
                 onBack = { navHostController.popBackStack() }
             )
         }
